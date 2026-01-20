@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>SNS 확산</title>
+  <style>
+    /* ... (기존 스타일 동일) ... */
+    body { font-family: system-ui, -apple-system, AppleSDGothicNeo, sans-serif; background:#f5f5f7; margin:0; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
+    .top { display:flex; align-items:center; justify-content:space-between; }
+    .badge { font-size:12px; padding:6px 10px; border-radius:999px; background:#111; color:#fff; }
+    .card { background:#fff; border:1px solid #e5e5e5; border-radius:14px; padding:16px; }
+    .row { display:flex; gap:12px; align-items:center; }
+    .avatar { width:38px; height:38px; border-radius:999px; background:#00ff00; flex:0 0 auto; }
+    .name { font-weight:700; }
+    .meta { color:#777; font-size:12px; }
+    .postText { font-size:16px; line-height:1.5; margin-top:10px; white-space:pre-wrap; }
+    .chip { display:inline-block; margin-top:10px; padding:6px 10px; border-radius:999px; background:#f0f0f0; font-size:12px; color:#333; }
+    .divider { height:1px; background:#eee; margin:12px 0; }
+    .comment { display:flex; gap:10px; margin-top:10px; }
+    .cBody { flex:1; }
+    .cText { margin-top:4px; color:#222; }
+    .shortsBox { position:relative; height:360px; border-radius:14px; overflow:hidden; background:#111; color:#fff; }
+    .shortsOverlay { position:absolute; left:16px; right:16px; bottom:16px; }
+    .shortsTitle { font-weight:800; font-size:18px; margin-bottom:6px; }
+    .shortsCaption { background:rgba(0,0,0,0.55); padding:10px 12px; border-radius:12px; line-height:1.4; }
+    button { border:0; background:#111; color:#fff; padding:10px 14px; border-radius:12px; cursor:pointer; }
+    .smallBtn { background:#fff; color:#111; border:1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="row">
+        <span class="badge">TRENDING</span>
+        <div class="meta">실시간 확산 화면</div>
+      </div>
+      <div class="row">
+        <button class="smallBtn" id="backToSubway">← 이전으로</button>
+        <button id="goToNews">처음으로</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="avatar"></div>
+        <div>
+          <div class="name">real_everyday</div>
+          <div class="meta">방금 · 공개</div>
+        </div>
+      </div>
+      <div class="postText" id="feedText">로드 중...</div>
+      <div class="chip">#진짜 #속보 #공유중</div>
+      <div class="divider"></div>
+      <div class="meta">댓글</div>
+      <div class="comment">
+        <div class="avatar" style="width:28px;height:28px;"></div>
+        <div class="cBody">
+          <div class="meta"><span class="name">user_01</span> · 1분 전</div>
+          <div class="cText" id="comment1">로드 중...</div>
+        </div>
+      </div>
+      <div class="comment">
+        <div class="avatar" style="width:28px;height:28px;"></div>
+        <div class="cBody">
+          <div class="meta"><span class="name">user_02</span> · 2분 전</div>
+          <div class="cText" id="comment2">로드 중...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shortsBox">
+        <div class="shortsOverlay">
+          <div class="shortsTitle">오늘의 쇼츠</div>
+          <div class="shortsCaption" id="shortsCaption">자막 로딩중...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ 설정 정보
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6o5To5SW5L_uvK0Q-htmq_ltQEW8fVt9GOqMJzxx33W696ZADRlT5BxoNCJcSJybV9g/exec";
+    const TOKEN = "my_secret_8982";
+    const POLL_MS = 2000;
+    let lastFact = "";
+
+    // 서버 데이터 가져오기 및 반영
+    async function fetchLatest() {
+      try {
+        const url = `${WEB_APP_URL}?action=latest&token=${encodeURIComponent(TOKEN)}&t=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store" });
+        const data = await res.json();
+
+        if (!data || !data.ok) return;
+
+        const fact = (data.fact || "").trim();
+        if (!fact || fact === lastFact) return;
+        
+        lastFact = fact;
+
+        // 화면 반영
+        document.getElementById("feedText").textContent = fact;
+        document.getElementById("comment1").textContent = `이거 진짜임? "${fact}"`;
+        document.getElementById("comment2").textContent = `방금 뉴스에서도 봄… ${fact}`;
+        const short = fact.length > 42 ? fact.slice(0, 42) + "..." : fact;
+        document.getElementById("shortsCaption").textContent = `“${short}”`;
+
+      } catch (e) {
+        console.error("[page4] fetchLatest error:", e);
+      }
+    }
+
+    fetchLatest();
+    setInterval(fetchLatest, POLL_MS);
+
+    // --- [변경됨] 버튼 동작 경로 수정 ---
+
+    // '이전으로' 버튼: Page 3(지하철)으로 이동
+    document.getElementById("backToSubway").addEventListener("click", () => {
+      window.location.href = "page3.html";
+    });
+
+    // '처음으로' 버튼: Page 2(뉴스)로 이동
+    document.getElementById("goToNews").addEventListener("click", () => {
+      window.location.href = "page2.html";
+    });
+  </script>
+</body>
+</html>

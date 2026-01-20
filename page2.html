@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>뉴스 속보</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+  
+    .news-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url("images/news_bg.png") no-repeat center center;
+      background-size: cover;
+    }
+
+    .breaking-news-text {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      position: absolute;
+      bottom: 12.5%; 
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%; 
+      font-size: 3rem;
+      font-weight: bold;
+      text-align: center;
+      color: black;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 초록색 테마 로딩 화면 */
+    #loadingOverlay {
+      display: none;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; z-index: 9999;
+      flex-direction: column; align-items: center; justify-content: center;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+<div class="news-container">
+  <div class="breaking-news-text" id="newsHeadline">데이터 로딩중...</div>
+</div>
+
+<div id="loadingOverlay">
+  <div id="loadingText" style="font-size:18px; margin-bottom:20px; color:#00ff00; font-weight:bold;">잠시만 기다려주세요...</div>
+  <div style="width:200px; height:2px; background:#113311; overflow:hidden;">
+    <div id="loadingBar" style="width:0%; height:100%; background:#00ff00; transition: width 1.8s linear;"></div>
+  </div>
+</div>
+
+<button onclick="moveNext()" style="
+  position: fixed; bottom: 20px; right: 20px;
+  padding: 15px 25px; background: #fff; color: #000;
+  border: 1px solid #a8a8a8; border-radius: 15px;
+  cursor: pointer; z-index: 1000;
+">
+  다음으로 →
+</button>
+
+<script>
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6o5To5SW5L_uvK0Q-htmq_ltQEW8fVt9GOqMJzxx33W696ZADRlT5BxoNCJcSJybV9g/exec";
+  const TOKEN = "my_secret_8982";
+  const newsHeadlineEl = document.getElementById("newsHeadline");
+  let lastFact = "";
+
+  async function fetchLatest() {
+    try {
+      const url = `${WEB_APP_URL}?action=latest&token=${encodeURIComponent(TOKEN)}&t=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const data = await res.json();
+      if (!data || !data.ok) return;
+      const fact = (data.fact || "").trim();
+      if (!fact || fact === lastFact) return;
+      lastFact = fact;
+      newsHeadlineEl.textContent = fact;
+    } catch (e) {
+      console.error("[page2] fetchLatest error:", e);
+    }
+  }
+
+  fetchLatest();
+  setInterval(fetchLatest, 1000);
+
+  function moveNext() {
+    // 0. 현재 뉴스 텍스트를 브라우저 메모리에 임시 저장 (중요!)
+    localStorage.setItem('currentNews', newsHeadlineEl.textContent);
+
+    const overlay = document.getElementById("loadingOverlay");
+    const bar = document.getElementById("loadingBar");
+
+    overlay.style.display = "flex";
+    setTimeout(() => { bar.style.width = "100%"; }, 50);
+
+    setTimeout(() => {
+      window.location.href = 'page3.html';
+    }, 2000);
+  }
+</script>
+</body>
+</html>

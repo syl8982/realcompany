@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>지하철 장면</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url("images/subway_bg.png") no-repeat center center;
+      background-size: cover;
+    }
+
+    .phone-screen-frame {
+      position: absolute;
+      top: 48%; 
+      left: 49.5%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 550px;
+      z-index: 999;           
+      pointer-events: auto;
+      border: none;
+      border-radius: 30px;
+      background: white;
+    }
+
+    .next-btn {
+      position: fixed; bottom: 30px; right: 30px;
+      padding: 15px 25px; background: #ffffff; color: #000000;
+      border: 1px solid #a8a8a8; border-radius: 15px; cursor: pointer;
+      z-index: 1000;
+    }
+    .prev-btn {
+  position: fixed; bottom: 30px; left: 30px; /* 왼쪽 아래 배치 */
+  padding: 15px 25px; background: #ffffff; color: #000000;
+  border: 1px solid #a8a8a8; border-radius: 15px; cursor: pointer;
+  z-index: 1000;
+    }
+    /* 로딩 화면 스타일을 정리했습니다 */
+    #loadingOverlay {
+      display: none; /* 처음에 숨김 */
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; color: #00ff33; z-index: 9999;
+      flex-direction: column; align-items: center; justify-content: center;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <iframe src="article.html" class="phone-screen-frame"></iframe>
+</div>
+
+<button class="prev-btn" onclick="location.href='page2.html'">← 이전으로</button>
+<button class="next-btn" onclick="startTransition('page4.html', '잠시만 기다려주세요...')">다음으로 →</button>
+
+<div id="loadingOverlay">
+  <div id="loadingText" style="font-size:18px; margin-bottom:20px; font-weight:300; letter-spacing:1px; color:#00ff33;">잠시만 기다려주세요...</div>
+  <div style="width:160px; height:1px; background:#333; border-radius:10px; overflow:hidden;">
+    <div id="loadingBar" style="width:0%; height:100%; background:#00ff33; transition: width 1.5s linear;"></div>
+  </div>
+</div>
+
+<script>
+    // 1. 주소창에서 'fact' 데이터가 있는지 확인
+const urlParams = new URLSearchParams(window.location.search);
+const initialFact = urlParams.get('fact');
+
+// 2. 만약 데이터가 있다면, iframe이 로드되자마자 데이터를 전달
+if (initialFact) {
+  const iframe = document.querySelector('.phone-screen-frame');
+  
+  // iframe이 준비되면 데이터를 보냄
+  iframe.onload = function() {
+    iframe.contentWindow.postMessage({
+      type: "UPDATE_DATA",
+      fact: initialFact
+    }, "*");
+  };
+}
+  function startTransition(nextUrl, message) {
+    const overlay = document.getElementById("loadingOverlay");
+    const bar = document.getElementById("loadingBar");
+    const text = document.getElementById("loadingText");
+
+    if (message) text.textContent = message;
+
+    // 로딩창 보이기
+    overlay.style.display = "flex";
+
+    // 로딩바 애니메이션 시작
+    setTimeout(() => {
+      bar.style.width = "100%";
+    }, 50);
+
+    // 2초 뒤 이동 (Page 4가 데이터를 미리 로딩할 시간 확보)
+    setTimeout(() => {
+      window.location.href = nextUrl;
+    }, 2000);
+  }
+</script>
+
+</body>
+</html>

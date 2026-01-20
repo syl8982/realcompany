@@ -208,8 +208,20 @@
           return;
         }
 
-        statusText.textContent = "처리되었습니다!";
+       statusText.textContent = "처리되었습니다! 잠시 후 이전 화면으로 돌아갑니다.";
         input.value = "";
+
+        // 2초 뒤에 실행 (메시지를 읽을 시간을 줍니다)
+        setTimeout(() => {
+          
+          // 방법 A: 이전 페이지(1번 웹사이트)로 돌아가기
+          window.history.back(); 
+
+          // 방법 B: 만약 새 창으로 띄운 거라면 창 닫기 (방법 A가 작동 안 할 때 대비)
+          // window.close();
+
+        }, 2000); 
+
       } catch (e) {
         statusText.textContent = "네트워크 오류가 발생했습니다.";
       }

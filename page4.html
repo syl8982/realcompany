@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>SNS 확산</title>
   <style>
-    /* ... (기존 스타일 동일) ... */
+    /* ... (기존 스타일 동일 유지) ... */
     body { font-family: system-ui, -apple-system, AppleSDGothicNeo, sans-serif; background:#f5f5f7; margin:0; }
     .wrap { max-width: 900px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
     .top { display:flex; align-items:center; justify-content:space-between; }
@@ -80,32 +80,36 @@
   </div>
 
   <script>
-    // ✅ 설정 정보
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6o5To5SW5L_uvK0Q-htmq_ltQEW8fVt9GOqMJzxx33W696ZADRlT5BxoNCJcSJybV9g/exec";
-    const TOKEN = "my_secret_8982";
-    const POLL_MS = 2000;
+    // ✅ 설정 정보 (URL 확인 완료)
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNZw4ry3VFIOkkZBW5DmJ451wxF_drvx7Bjvetpl57O27c7w8VT2Gv4ObKoOV4taHBtw/exec";
+    const POLL_MS = 3000; // 3초 간격 권장
     let lastFact = "";
 
-    // 서버 데이터 가져오기 및 반영
     async function fetchLatest() {
       try {
-        const url = `${WEB_APP_URL}?action=latest&token=${encodeURIComponent(TOKEN)}&t=${Date.now()}`;
-        const res = await fetch(url, { cache: "no-store" });
+        // 1. 단순화된 URL 호출 (t= 캐시 방지용)
+        const url = `${WEB_APP_URL}?t=${Date.now()}`;
+        const res = await fetch(url);
         const data = await res.json();
 
         if (!data || !data.ok) return;
 
-        const fact = (data.fact || "").trim();
-        if (!fact || fact === lastFact) return;
+        // 2. 구글 시트에서 보낸 필드명인 'latestNews'로 데이터 읽기
+        const fact = (data.latestNews || "").trim();
         
+        if (!fact || fact === lastFact) return;
         lastFact = fact;
 
-        // 화면 반영
+        // 3. 화면 반영
         document.getElementById("feedText").textContent = fact;
         document.getElementById("comment1").textContent = `이거 진짜임? "${fact}"`;
         document.getElementById("comment2").textContent = `방금 뉴스에서도 봄… ${fact}`;
+        
         const short = fact.length > 42 ? fact.slice(0, 42) + "..." : fact;
         document.getElementById("shortsCaption").textContent = `“${short}”`;
+
+        // 보조 백업용 로컬스토리지 저장
+        localStorage.setItem('currentNews', fact);
 
       } catch (e) {
         console.error("[page4] fetchLatest error:", e);
@@ -115,17 +119,11 @@
     fetchLatest();
     setInterval(fetchLatest, POLL_MS);
 
-    // --- [변경됨] 버튼 동작 경로 수정 ---
-
-    // '이전으로' 버튼: Page 3(지하철)으로 이동
+    // 버튼 동작 설정
     document.getElementById("backToSubway").addEventListener("click", () => {
       window.location.href = "page3.html";
     });
 
-    // '처음으로' 버튼: Page 2(뉴스)로 이동
     document.getElementById("goToNews").addEventListener("click", () => {
       window.location.href = "page2.html";
     });
-  </script>
-</body>
-</html>

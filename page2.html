@@ -63,31 +63,42 @@
 </button>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6o5To5SW5L_uvK0Q-htmq_ltQEW8fVt9GOqMJzxx33W696ZADRlT5BxoNCJcSJybV9g/exec";
-  const TOKEN = "my_secret_8982";
+  // 1. 본인의 새 배포 URL로 교체하세요
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNZw4ry3VFIOkkZBW5DmJ451wxF_drvx7Bjvetpl57O27c7w8VT2Gv4ObKoOV4taHBtw/exec";
   const newsHeadlineEl = document.getElementById("newsHeadline");
   let lastFact = "";
 
   async function fetchLatest() {
     try {
-      const url = `${WEB_APP_URL}?action=latest&token=${encodeURIComponent(TOKEN)}&t=${Date.now()}`;
-      const res = await fetch(url, { cache: "no-store" });
+      // 파라미터를 싹 비우고 URL만 호출합니다. (t=...는 캐시 방지용)
+      const url = `${WEB_APP_URL}?t=${Date.now()}`;
+      const res = await fetch(url);
       const data = await res.json();
+      
       if (!data || !data.ok) return;
-      const fact = (data.fact || "").trim();
+      
+      // 구글 스크립트에서 보낸 필드명은 'latestNews'입니다.
+      const fact = (data.latestNews || "").trim();
+      
       if (!fact || fact === lastFact) return;
+      
       lastFact = fact;
       newsHeadlineEl.textContent = fact;
+      
+      // 다른 컴퓨터에서도 똑같이 보려면 로컬스토리지는 이제 보조 수단으로만 씁니다.
+      localStorage.setItem('currentNews', fact);
+      
     } catch (e) {
       console.error("[page2] fetchLatest error:", e);
     }
   }
 
+  // 3초마다 체크 (너무 빠르면 구글 서버에서 차단될 수 있어 3000ms 추천)
   fetchLatest();
-  setInterval(fetchLatest, 1000);
+  setInterval(fetchLatest, 3000);
 
   function moveNext() {
-    // 0. 현재 뉴스 텍스트를 브라우저 메모리에 임시 저장 (중요!)
+    // 이동 시 현재 화면에 떠 있는 텍스트를 한 번 더 확실히 저장
     localStorage.setItem('currentNews', newsHeadlineEl.textContent);
 
     const overlay = document.getElementById("loadingOverlay");

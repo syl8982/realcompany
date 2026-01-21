@@ -68,23 +68,46 @@
   </div>
 
   <script>
-  // Page 2에서 저장한 뉴스 제목 가져오기
-  const savedNews = localStorage.getItem('currentNews') || "새로운 소식"; // 데이터가 없을 경우 기본값 설정
-  
-  if (savedNews) {
-    // 1. 상단 타이틀 바 업데이트
-    document.getElementById('news-title').textContent = savedNews;
-    
-    // 2. 본문 텍스트 조합 (원하시는 문장 중간에 데이터 삽입)
-    const articleBody = ` 오늘 저녁, '${savedNews}' 라는 사실이 공표되었습니다. 해당 내용은 공개 직후 일부 온라인 커뮤니티를 중심으로 공유되기 시작했으며, 짧은 시간 안에 다양한 플랫폼으로 확산되고 있습니다.
+  // 1. 본인의 새 배포 URL로 교체
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNZw4ry3VFIOkkZBW5DmJ451wxF_drvx7Bjvetpl57O27c7w8VT2Gv4ObKoOV4taHBtw/exec";
+  let lastFact = "";
+
+  async function fetchArticleData() {
+    try {
+      const res = await fetch(`${WEB_APP_URL}?t=${Date.now()}`);
+      const data = await res.json();
+      
+      if (!data || !data.ok) return;
+      const savedNews = (data.latestNews || "").trim();
+      
+      // 이전 데이터와 같으면 업데이트 하지 않음 (깜빡임 방지)
+      if (!savedNews || savedNews === lastFact) return;
+      lastFact = savedNews;
+
+      // 2. 상단 타이틀 바 업데이트
+      document.getElementById('news-title').textContent = savedNews;
+      
+      // 3. 본문 텍스트 조합 (기자 정보 제외 버전)
+      const articleBody = `오늘 저녁, '${savedNews}' 사실이 공표되었습니다. 해당 내용은 공개 직후 일부 온라인 커뮤니티를 중심으로 공유되기 시작했으며, 짧은 시간 안에 다양한 플랫폼으로 확산되고 있습니다.
 
 전문가들은 이번 사안이 개인의 선택 방식과 일상적 판단에까지 영향을 미칠 수 있다고 분석합니다. 특히 정보의 소비 방식과 사회적 합의가 형성되는 과정 전반에 변화가 나타날 가능성이 제기되고 있습니다. 일부 분석가들은 이번 사안이 향후 정책, 산업 구조, 문화 전반에 걸쳐 연쇄적인 반응을 불러올 수 있다는 전망도 내놓고 있습니다.
 
 관계자들은 아직 구체적인 결론을 내리기에는 이르다고 밝혔지만, 이번 사실이 우리 사회에 남길 흔적은 결코 작지 않을 것이라는 데에는 의견이 모아지고 있습니다.`;
 
-    // 3. 조합된 문장을 본문 영역에 넣기
-    document.getElementById('news-body').textContent = articleBody;
+      // 4. 조합된 문장을 본문 영역에 넣기
+      document.getElementById('news-body').textContent = articleBody;
+      
+      // 로컬 스토리지도 동기화 (백업용)
+      localStorage.setItem('currentNews', savedNews);
+      
+    } catch (e) {
+      console.error("[article] fetch error:", e);
+    }
   }
+
+  // 3초마다 업데이트
+  fetchArticleData();
+  setInterval(fetchArticleData, 3000);
 </script>
 
 </body>

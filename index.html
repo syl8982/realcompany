@@ -44,15 +44,21 @@
 }
 
 
-    /* 2. 첫 화면 웰컴 텍스트 애니메이션 */
+    /* 2. 첫 화면 웰컴 텍스트 애니메이션 및 광선 효과 */
     .welcome-text {
       margin-top: 100px;
       font-size: 3rem;
-      font-weight: bold;
+      font-weight: 900; /* 더 선명하게 보이도록 900으로 상향 */
       color: #000;
-      text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.5);
       z-index: 1; /* 오버레이보다 아래에 위치 */
       
+      /* 흰색 외부광선 효과: 중첩을 없애고 바로 적용합니다 */
+      text-shadow: 
+          0 0 10px rgba(255, 255, 255, 1), 
+          0 0 20px rgba(255, 255, 255, 0.8), 
+          0 0 30px rgba(255, 255, 255, 0.6);
+          
+      line-height: 1.2;
       opacity: 0;
       transform: translateY(30px);
       animation: fadeInUp 1.5s ease-out forwards;

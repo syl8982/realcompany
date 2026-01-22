@@ -121,9 +121,13 @@
 
     // 버튼 동작 설정
     document.getElementById("backToSubway").addEventListener("click", () => {
-      window.location.href = "page3.html";
+      // ./ 를 붙여 현재 경로임을 명시하는 것이 안전합니다.
+      window.location.href = "./page3.html";
     });
 
     document.getElementById("goToNews").addEventListener("click", () => {
-      window.location.href = "page2.html";
+      window.location.href = "./page2.html";
     });
+    
+  // 반드시 스크립트 태그를 닫아주어야 합니다!
+  </script>
